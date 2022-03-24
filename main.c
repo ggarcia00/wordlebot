@@ -33,22 +33,23 @@ void readfile(char **words){
 
 
 
-int evaluateFitness(Individuo ind, char target[5]){
-    ind.fitness = 0;
+void evaluateFitness(Individuo *ind, char target[5]){
+    ind->fitness = 0;
     int i;
     int j;
     for(i = 0; i < 5; i++){
         for(j = 0; j < 5; j++){
 
-            if(ind.genoma[i] == ind.genoma[j]){
+            if(ind->genoma[i] == ind->genoma[j]){
                 if(i == j){
-                    ind.fitness += 2;
+                    ind->fitness += 2;
                 }else{
-                    ind.fitness += 1;
+                    ind->fitness += 1;
                 }
             }
         }
     }
+    ind->fitness = ind->fitness/10;
 
 }
 
@@ -67,6 +68,98 @@ void popula(Individuo *individuos, int len){
 
 }
 
+void ordena(int array[POPULACAO]){
+    int aux;
+
+    for( int i = 0; i < POPULACAO; i++){
+        for( int j = POPULACAO - 1; j > i; j--){
+            if(array[j] < array[j-1]){
+                aux = array[j];
+                array[j] = array[j-1];
+                array[j-1] = aux;
+            }
+        }
+        // printf(" %d, ", array[i]);
+    }
+}
+
+
+void roulette_wheel(Individuo *individuos){
+    srand(time(0));
+
+    int total_chance = 0, i, j;
+
+    for (i = 0; i < POPULACAO; i++){
+        total_chance += individuos[i].fitness;
+    }
+
+    int sorteio[POPULACAO];
+    
+    for(i = 0; i < POPULACAO; i++){
+        sorteio[i] = rand() % total_chance;
+    }
+
+    ordena(sorteio);
+
+    int atual_chance = 0;
+
+
+    Individuo filhos[POPULACAO];
+
+    
+    for( i=0, j=0; i < POPULACAO; i++){
+        atual_chance += individuos[i].fitness;
+        if(atual_chance >= sorteio[j]){
+            strcpy(filhos[j].genoma, individuos[i].genoma);
+            atual_chance -= individuos[i].fitness;
+            j++;
+            i--;
+        }
+    }
+
+    for(i=0; i < POPULACAO; i++){
+        strcpy(individuos[i].genoma, filhos[i].genoma );
+    }
+
+
+}
+
+// A D 
+// C D 
+
+// A B
+
+void crossover(Individuo *individuos){
+    Individuo troca;
+
+    int i, j, k;
+
+    for(i=0; i < POPULACAO; i+=2){
+        strcpy(troca.genoma, individuos[i].genoma);
+
+        // Crossover entre o começo do primeiro e final do segundo
+        for(j=0; j<3; j++){
+            individuos[i+1].genoma[j] = troca.genoma[j];
+        }
+
+        // Crossover entre o começo do segundo e final do primeiro
+        for(j=4; j > 2; j--){
+            individuos[i].genoma[j] = individuos[i+1].genoma[j];
+        }
+    
+    }
+}
+
+
+void melhoresIndividuos(Individuo *individuos){
+    int i = 0;
+
+    printf("MELHORES INDIVIDUOS:\n");
+    for(; i < POPULACAO; i++){
+        printf("[%d] -> %s\n",  i, individuos[i].genoma);
+    }
+}
+
 
 int main(){
     char *wordlist[2315];
@@ -83,6 +176,25 @@ int main(){
     strcpy(target, wordlist[0]);
 
     popula(individuos, POPULACAO);
+    
+    int geracao = 0;
+    for(geracao = 1; geracao <= 100; geracao++){
+
+        for(int i = 0; i < POPULACAO; i++){
+            evaluateFitness(&individuos[i], target);
+        }
+
+        // SELECIONA MELHORES INDIVIDUOS
+        roulette_wheel(individuos);
+
+        crossover(individuos);
+
+        melhoresIndividuos(individuos);
+        // scanf("a", NULL);
+        // setbuf(stdin, NULL);
+    }
+
+
     
 
 
