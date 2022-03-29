@@ -174,6 +174,7 @@ int main(){
     popula(individuos, POPULACAO, wordlist);
     
     printf("\n");
+    printf("\e[?25l");
     int geracao = 0;
     for(geracao = 1; geracao <= 1000; geracao++){
         printf("Geração: %d\r", geracao);
@@ -191,6 +192,7 @@ int main(){
         // setbuf(stdin, NULL);
     }
     printf("\n");
+    printf("\e[?25h");
     melhoresIndividuos(individuos);
 
 
