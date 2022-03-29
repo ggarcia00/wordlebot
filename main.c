@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#define POPULACAO 10
+#define POPULACAO 200
 
 typedef struct{
     int fitness;
@@ -14,21 +14,23 @@ typedef struct{
 void readfile(char **words){
     FILE *f = fopen("solutions.txt", "r");
     
-    int c;
+    char c;
     int i = 0;
     int j = 0;
 
     while((c = fgetc(f)) != EOF){
 
         if( c == '\n'){
-            i = 0;
+            j = 0;
+            i++;
+        } else {
+            words[i][j] = c;
             j++;
         }
 
-        words[i][j] = c;
-        i++;
     }
     printf("Fim do arquivo\n");
+    fclose(f);
 }
 
 
@@ -39,8 +41,7 @@ void evaluateFitness(Individuo *ind, char target[5]){
     int j;
     for(i = 0; i < 5; i++){
         for(j = 0; j < 5; j++){
-
-            if(ind->genoma[i] == ind->genoma[j]){
+            if(ind->genoma[i] == target[j]){
                 if(i == j){
                     ind->fitness += 2;
                 }else{
@@ -49,21 +50,22 @@ void evaluateFitness(Individuo *ind, char target[5]){
             }
         }
     }
-    ind->fitness = ind->fitness/10;
-
+    // ind->fitness = ind->fitness/10;
 }
 
-void popula(Individuo *individuos, int len){
+void popula(Individuo *individuos, int len, char **words){
     srand(time(0));
 
-    int i, j, letra;
+    int i, j, letra, indice;
     
     for(i =0; i < len; i++){
+        indice = (rand() % 2315);
         for(j = 0; j < 5; j++){
-            letra = (rand() % 25) + 'a';
+            letra = words[indice][j];
+            // letra = (rand() % 25) + 'a';
             individuos[i].genoma[j] = letra;
         }
-        individuos[i].genoma[j] = '\0';
+        // individuos[i].genoma[j] = '\0';
     }
 
 }
@@ -92,7 +94,6 @@ void roulette_wheel(Individuo *individuos){
     for (i = 0; i < POPULACAO; i++){
         total_chance += individuos[i].fitness;
     }
-
     int sorteio[POPULACAO];
     
     for(i = 0; i < POPULACAO; i++){
@@ -103,11 +104,9 @@ void roulette_wheel(Individuo *individuos){
 
     int atual_chance = 0;
 
-
     Individuo filhos[POPULACAO];
-
     
-    for( i=0, j=0; i < POPULACAO; i++){
+    for( i=0, j=0; j < POPULACAO; i++){
         atual_chance += individuos[i].fitness;
         if(atual_chance >= sorteio[j]){
             strcpy(filhos[j].genoma, individuos[i].genoma);
@@ -120,8 +119,6 @@ void roulette_wheel(Individuo *individuos){
     for(i=0; i < POPULACAO; i++){
         strcpy(individuos[i].genoma, filhos[i].genoma );
     }
-
-
 }
 
 // A D 
@@ -156,7 +153,7 @@ void melhoresIndividuos(Individuo *individuos){
 
     printf("MELHORES INDIVIDUOS:\n");
     for(; i < POPULACAO; i++){
-        printf("[%d] -> %s\n",  i, individuos[i].genoma);
+        printf("[%d] -> %s\n",  i+1, individuos[i].genoma);
     }
 }
 
@@ -172,13 +169,14 @@ int main(){
 
     readfile(wordlist);
 
-
     strcpy(target, wordlist[0]);
 
-    popula(individuos, POPULACAO);
+    popula(individuos, POPULACAO, wordlist);
     
+    printf("\n");
     int geracao = 0;
-    for(geracao = 1; geracao <= 100; geracao++){
+    for(geracao = 1; geracao <= 1000; geracao++){
+        printf("Geração: %d\r", geracao);
 
         for(int i = 0; i < POPULACAO; i++){
             evaluateFitness(&individuos[i], target);
@@ -189,18 +187,16 @@ int main(){
 
         crossover(individuos);
 
-        melhoresIndividuos(individuos);
         // scanf("a", NULL);
         // setbuf(stdin, NULL);
     }
+    printf("\n");
+    melhoresIndividuos(individuos);
 
-
-    
 
 
     return 0;
 }
-
 
 
 
