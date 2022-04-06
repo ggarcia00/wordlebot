@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#define POPULACAO 200
+#define POPULACAO 100
 
 typedef struct{
     int fitness;
     char genoma[5];
 } Individuo;
 
+
+void mutacao(Individuo *individuos);
 
 
 void readfile(char **words){
@@ -43,9 +45,9 @@ void evaluateFitness(Individuo *ind, char target[5]){
         for(j = 0; j < 5; j++){
             if(ind->genoma[i] == target[j]){
                 if(i == j){
-                    ind->fitness += 5;
-                }else{
                     ind->fitness += 2;
+                }else{
+                    ind->fitness += 1;
                 }
             }
         }
@@ -54,8 +56,6 @@ void evaluateFitness(Individuo *ind, char target[5]){
 }
 
 void popula(Individuo *individuos, int len, char **words){
-    srand(time(0));
-
     int i, j, letra, indice;
     
     for(i =0; i < len; i++){
@@ -87,8 +87,6 @@ void ordena(int array[POPULACAO]){
 
 
 void roulette_wheel(Individuo *individuos){
-    srand(time(0));
-
     int total_chance = 0, i, j;
 
     for (i = 0; i < POPULACAO; i++){
@@ -116,15 +114,13 @@ void roulette_wheel(Individuo *individuos){
         }
     }
 
+    mutacao(filhos);
+
     for(i=0; i < POPULACAO; i++){
         strcpy(individuos[i].genoma, filhos[i].genoma );
     }
 }
 
-// A D 
-// C D 
-
-// A B
 
 void crossover(Individuo *individuos){
     Individuo troca;
@@ -147,6 +143,20 @@ void crossover(Individuo *individuos){
     }
 }
 
+void mutacao(Individuo *individuos) {
+    Individuo mutante;
+
+    int i, j, ref = rand() % POPULACAO, letraMutante, gen;
+    
+    for(i=0; i<POPULACAO; i++){
+        gen = rand() % POPULACAO;
+        if (gen == ref) {
+            letraMutante = rand() % 5;
+            individuos[i].genoma[letraMutante] = rand() % 26 + 'a';
+        }
+    }
+}
+
 
 void melhoresIndividuos(Individuo *individuos){
     int i = 0;
@@ -157,10 +167,21 @@ void melhoresIndividuos(Individuo *individuos){
     }
 }
 
+int verificaPalavras(Individuo *individuos, char target[5]){
+    int i;
+    for (i=0; i<POPULACAO; i++) {
+        if (!strcmp(individuos[i].genoma, target))
+            return i;
+    }
+    return -1;
+}
+
 
 int main(){
+    srand(time(0));
     char *wordlist[2315];
     char target[5];
+    int posFinal;
     Individuo individuos[POPULACAO];
 
     for( int i = 0; i < 2315; i++){
@@ -172,12 +193,13 @@ int main(){
     strcpy(target, wordlist[0]);
 
     popula(individuos, POPULACAO, wordlist);
+
     
     printf("\n");
     printf("\e[?25l");
     int geracao = 0;
-    for(geracao = 1; geracao <= 1000; geracao++){
-        printf("Geração: %d\r", geracao);
+    for(geracao = 1; geracao; geracao++){
+        printf("Geração: %d\n", geracao);
 
         for(int i = 0; i < POPULACAO; i++){
             evaluateFitness(&individuos[i], target);
@@ -188,17 +210,21 @@ int main(){
 
         crossover(individuos);
 
-        // scanf("a", NULL);
-        // setbuf(stdin, NULL);
+        posFinal = verificaPalavras(individuos, target);
+        if (posFinal > -1) {
+            break;            
+        }
+
     }
     printf("\n");
     printf("\e[?25h");
+
     melhoresIndividuos(individuos);
 
-
+    printf("Palavra encontrada na geração %d\n", geracao);
+    printf("Individuo %d => %s\n", posFinal+1, individuos[posFinal].genoma);
 
     return 0;
 }
-
 
 
