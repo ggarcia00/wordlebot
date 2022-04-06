@@ -43,9 +43,9 @@ void evaluateFitness(Individuo *ind, char target[5]){
         for(j = 0; j < 5; j++){
             if(ind->genoma[i] == target[j]){
                 if(i == j){
-                    ind->fitness += 2;
+                    ind->fitness += 5;
                 }else{
-                    ind->fitness += 1;
+                    ind->fitness += 2;
                 }
             }
         }
