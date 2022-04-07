@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#define POPULACAO 100
+#define POPULACAO 50
 
 typedef struct{
     int fitness;
@@ -31,7 +31,7 @@ void readfile(char **words){
         }
 
     }
-    printf("Fim do arquivo\n");
+    // printf("Fim do arquivo\n");
     fclose(f);
 }
 
@@ -55,17 +55,15 @@ void evaluateFitness(Individuo *ind, char target[5]){
     // ind->fitness = ind->fitness/10;
 }
 
-void popula(Individuo *individuos, int len, char **words){
-    int i, j, letra, indice;
+void popula(Individuo *individuos, int len){
+    int i, j, letra;
     
-    for(i =0; i < len; i++){
-        indice = (rand() % 2315);
-        for(j = 0; j < 5; j++){
-            letra = words[indice][j];
-            // letra = (rand() % 25) + 'a';
+    for( i = 0; i < len; i++){
+        for( j = 0; j < 5; j++){
+            letra = (rand() % 25) + 'a';
             individuos[i].genoma[j] = letra;
         }
-        // individuos[i].genoma[j] = '\0';
+        individuos[i].genoma[j] = '\0';
     }
 
 }
@@ -167,10 +165,10 @@ void melhoresIndividuos(Individuo *individuos){
     }
 }
 
-int verificaPalavras(Individuo *individuos, char target[5]){
+int verificaPalavras(Individuo *individuos){
     int i;
     for (i=0; i<POPULACAO; i++) {
-        if (!strcmp(individuos[i].genoma, target))
+        if (individuos[i].fitness == 10)
             return i;
     }
     return -1;
@@ -178,10 +176,10 @@ int verificaPalavras(Individuo *individuos, char target[5]){
 
 
 int main(){
-    srand(time(0));
+    srand(time(NULL));
     char *wordlist[2315];
     char target[5];
-    int posFinal;
+    int pos, posFinal;
     Individuo individuos[POPULACAO];
 
     for( int i = 0; i < 2315; i++){
@@ -190,30 +188,38 @@ int main(){
 
     readfile(wordlist);
 
-    strcpy(target, wordlist[0]);
+    printf("Posição da palavra a ser encontrada: ");
+    scanf(" %d", &pos);
 
-    popula(individuos, POPULACAO, wordlist);
+    strcpy(target, wordlist[pos-1]);
 
+    popula(individuos, POPULACAO);
+
+    for(int i = 0; i < POPULACAO; i++){
+        evaluateFitness(&individuos[i], target);
+    }
     
     printf("\n");
     printf("\e[?25l");
-    int geracao = 0;
-    for(geracao = 1; geracao; geracao++){
-        printf("Geração: %d\n", geracao);
+    int geracao = 1;
+    for( ; ; geracao++){
+        printf("Geração: %d\r", geracao);
 
-        for(int i = 0; i < POPULACAO; i++){
-            evaluateFitness(&individuos[i], target);
-        }
 
         // SELECIONA MELHORES INDIVIDUOS
         roulette_wheel(individuos);
 
         crossover(individuos);
 
-        posFinal = verificaPalavras(individuos, target);
+        for(int i = 0; i < POPULACAO; i++){
+            evaluateFitness(&individuos[i], target);
+        }
+
+        posFinal = verificaPalavras(individuos);
         if (posFinal > -1) {
             break;            
         }
+
 
     }
     printf("\n");
