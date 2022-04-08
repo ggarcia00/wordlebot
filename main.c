@@ -4,6 +4,7 @@
 #include <string.h>
 #define POPULACAO 50
 
+
 typedef struct{
     int fitness;
     char genoma[5];
@@ -42,10 +43,11 @@ void evaluateFitness(Individuo *ind, char target[5]){
     int i;
     int j;
     for(i = 0; i < 5; i++){
-        for(j = 0; j < 5; j++){
+        for(j = i; j < 5; j++){
             if(ind->genoma[i] == target[j]){
                 if(i == j){
                     ind->fitness += 2;
+                    i++;
                 }else{
                     ind->fitness += 1;
                 }
