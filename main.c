@@ -50,11 +50,10 @@ void evaluateFitness(Individuo *ind, char target[5]){
                 }else{
                     ind->fitness += 1;
                 }
-                    i++;
             }
+                    i++;
         }
     }
-    // ind->fitness = ind->fitness/10;
 }
 
 void popula(Individuo *individuos, int len){
@@ -93,7 +92,7 @@ void roulette_wheel(Individuo *individuos){
         total_chance += individuos[i].fitness;
     }
     int sorteio[POPULACAO];
-    
+
     for(i = 0; i < POPULACAO; i++){
         sorteio[i] = rand() % total_chance;
     }
@@ -101,7 +100,6 @@ void roulette_wheel(Individuo *individuos){
     ordena(sorteio);
 
     int atual_chance = 0;
-
     Individuo filhos[POPULACAO];
     
     for( i=0, j=0; j < POPULACAO; i++){
@@ -113,9 +111,6 @@ void roulette_wheel(Individuo *individuos){
             i--;
         }
     }
-
-    mutacao(filhos);
-
     for(i=0; i < POPULACAO; i++){
         strcpy(individuos[i].genoma, filhos[i].genoma );
     }
@@ -212,6 +207,8 @@ int main(){
         roulette_wheel(individuos);
 
         crossover(individuos);
+
+        mutacao(individuos);
 
         for(int i = 0; i < POPULACAO; i++){
             evaluateFitness(&individuos[i], target);
