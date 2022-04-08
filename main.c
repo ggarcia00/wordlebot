@@ -47,10 +47,10 @@ void evaluateFitness(Individuo *ind, char target[5]){
             if(ind->genoma[i] == target[j]){
                 if(i == j){
                     ind->fitness += 2;
-                    i++;
                 }else{
                     ind->fitness += 1;
                 }
+                    i++;
             }
         }
     }
